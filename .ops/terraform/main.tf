@@ -99,12 +99,11 @@ module "vpc" {
 
   routes = [
     {
-      name             = "allow-egress"
-      description      = "Allow all outgoing traffic"
+      name              = "allow-egress"
+      description       = "Allow all outgoing traffic"
       destination_range = "0.0.0.0/0"
-      tags             = "allow-all-egress"
-      next_hop_gateway = false
-      next_hop_ip      = null
+      tags              = "allow-all-egress"
+      next_hop_internet = "true"
     }
   ]
 }
