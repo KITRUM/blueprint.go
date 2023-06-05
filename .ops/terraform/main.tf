@@ -88,7 +88,7 @@ module "vpc" {
       name             = "allow-egress"
       description      = "Allow all outgoing traffic"
       destination_cidr = "0.0.0.0/0"
-      tags             = ["allow-egress"]
+      tags             = "allow-egress"
       next_hop_gateway = true
     }
   ]
