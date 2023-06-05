@@ -28,6 +28,14 @@ provider "google" {
   credentials = var.json_key_file_content
 }
 
+provider "google-beta" {
+  project = "golang-blueprint"
+  region  = "europe-central2"
+  zone    = "europe-central2-a"
+
+  credentials = var.json_key_file_content
+}
+
 variable "json_key_file_content" {
   type = string
 }
