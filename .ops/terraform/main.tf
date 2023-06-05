@@ -24,6 +24,12 @@ provider "google" {
   project = "golang-blueprint"
   region  = "europe-central2"
   zone    = "europe-central2-a"
+
+  credentials = var.json_key_file_content
+}
+
+variable "json_key_file_content" {
+  type = string
 }
 
 variable "project" {
@@ -32,7 +38,7 @@ variable "project" {
 }
 
 variable "region" {
-  type = string
+  type    = string
   default = "europe-central2"
 }
 
