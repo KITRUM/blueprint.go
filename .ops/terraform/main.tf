@@ -22,8 +22,8 @@ terraform {
 
 provider "google" {
   project = "golang-blueprint"
-  region  = "us-central1"
-  zone    = "us-central1-c"
+  region  = "europe-central2"
+  zone    = "europe-central2-a"
 }
 
 variable "project" {
@@ -44,41 +44,39 @@ module "vpc" {
   network_name = "${var.project}-vpc"
   routing_mode = "GLOBAL"
 
-  ip_cidr_range = "10.0.0.0/16"
-
   subnets = [
     {
-      subnet_name   = "public-subnet-1"
+      subnet_name   = "public-${var.region}-a"
       subnet_ip     = "10.0.1.0/24"
       subnet_region = "${var.region}-a"
       subnet_type   = "public"
     },
     {
-      subnet_name   = "public-subnet-2"
+      subnet_name   = "public-${var.region}-b"
       subnet_ip     = "10.0.2.0/24"
       subnet_region = "${var.region}-b"
       subnet_type   = "public"
     },
     {
-      subnet_name   = "public-subnet-3"
+      subnet_name   = "public-${var.region}-c"
       subnet_ip     = "10.0.3.0/24"
       subnet_region = "${var.region}-c"
       subnet_type   = "public"
     },
     {
-      subnet_name   = "private-subnet-1"
+      subnet_name   = "private-${var.region}-a"
       subnet_ip     = "10.0.11.0/24"
       subnet_region = "${var.region}-a"
       subnet_type   = "private"
     },
     {
-      subnet_name   = "private-subnet-2"
+      subnet_name   = "private--${var.region}-b"
       subnet_ip     = "10.0.12.0/24"
       subnet_region = "${var.region}-b"
       subnet_type   = "private"
     },
     {
-      subnet_name   = "private-subnet-3"
+      subnet_name   = "private-${var.region}-c"
       subnet_ip     = "10.0.13.0/24"
       subnet_region = "${var.region}-c"
       subnet_type   = "private"
