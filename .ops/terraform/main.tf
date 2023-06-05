@@ -52,7 +52,7 @@ variable "region" {
 
 module "vpc" {
   source  = "terraform-google-modules/network/google"
-  version = "~> 7.0"
+  version = "~> 6.0"
 
   project_id   = var.project
   network_name = "${var.project}-vpc"
@@ -102,7 +102,7 @@ module "vpc" {
       name             = "allow-egress"
       description      = "Allow all outgoing traffic"
       destination_cidr = "0.0.0.0/0"
-      tags             = "allow-egress"
+      tags             = "allow-all-egress"
       next_hop_gateway = true
     }
   ]
