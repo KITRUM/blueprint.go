@@ -101,7 +101,6 @@ func ServeCommand() *cli.Command {
 				}
 
 				logger.Infof("Database migration finished")
-
 			}
 
 			catStorage := pgcatstore.New(dbConn)
