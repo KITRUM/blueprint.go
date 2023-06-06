@@ -40,6 +40,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    needs:
+      - test
+      - lint
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -58,12 +61,12 @@ jobs:
           docker build \
           --build-arg BRANCH=${{ github.ref }} \
           --build-arg COMMIT=${{ github.sha }} \
-          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic:${{ github.sha }} \
-          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic:latest \
+          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }} \
+          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest \
           .
 
       - name: Docker push
         run: |
-          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic:${{ github.sha }}
-          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic:latest
+          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }}
+          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest
 
