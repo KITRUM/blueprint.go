@@ -71,7 +71,7 @@ func ServeCommand() *cli.Command {
 		Name:  "serve",
 		Usage: "runs HTTP listener to serve the incoming connections",
 		Action: func(c *cli.Context) error {
-			logger := log.New()
+			logger := log.New() // Init logger.
 
 			dbConfig, err := pgxpool.ParseConfig(cfg.DBConnStr)
 			if err != nil {
