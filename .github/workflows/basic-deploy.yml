@@ -51,5 +51,5 @@ jobs:
           credentials_json: ${{ secrets.GCP_JSON_KEY }}
 
       - uses: google-github-actions/setup-gcloud@v1
-        run: |
-          gcloud auth configure-docker europe-central2-docker.pkg.dev
+      - run: gcloud auth configure-docker europe-central2-docker.pkg.dev
+
