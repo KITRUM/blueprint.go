@@ -60,39 +60,39 @@ module "vpc" {
 
   subnets = [
     {
-      subnet_name   = "public-${var.region}-a"
+      subnet_name   = "public-${var.region}"
       subnet_ip     = "10.0.1.0/24"
-      subnet_region = "${var.region}-a"
+      subnet_region = var.region
       subnet_type   = "public"
     },
     {
-      subnet_name   = "public-${var.region}-b"
+      subnet_name   = "public-${var.region}"
       subnet_ip     = "10.0.2.0/24"
-      subnet_region = "${var.region}-b"
+      subnet_region = var.region
       subnet_type   = "public"
     },
     {
-      subnet_name   = "public-${var.region}-c"
+      subnet_name   = "public-${var.region}"
       subnet_ip     = "10.0.3.0/24"
-      subnet_region = "${var.region}-c"
+      subnet_region = var.region
       subnet_type   = "public"
     },
     {
-      subnet_name   = "private-${var.region}-a"
+      subnet_name   = "private-${var.region}"
       subnet_ip     = "10.0.11.0/24"
-      subnet_region = "${var.region}-a"
+      subnet_region = var.region
       subnet_type   = "private"
     },
     {
-      subnet_name   = "private--${var.region}-b"
+      subnet_name   = "private-${var.region}"
       subnet_ip     = "10.0.12.0/24"
-      subnet_region = "${var.region}-b"
+      subnet_region = var.region
       subnet_type   = "private"
     },
     {
-      subnet_name   = "private-${var.region}-c"
+      subnet_name   = "private-${var.region}"
       subnet_ip     = "10.0.13.0/24"
-      subnet_region = "${var.region}-c"
+      subnet_region = var.region
       subnet_type   = "private"
     }
   ]
