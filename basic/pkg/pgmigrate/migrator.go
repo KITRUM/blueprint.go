@@ -34,7 +34,7 @@ func New(conn *pgxpool.Pool, migrations fs.FS) (*Migrator, error) {
 }
 
 // Migrator holds logic of how to load and apply database
-// migrations to SQLite.
+// migrations to Postgres.
 type Migrator struct {
 	conn *pgx.Conn
 	m    *migrate.Migrator

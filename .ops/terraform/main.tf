@@ -107,3 +107,9 @@ module "vpc" {
     }
   ]
 }
+
+resource "google_artifact_registry_repository" "basic" {
+  format        = "DOCKER"
+  repository_id = "${var.project}-basic"
+  location      = var.region
+}
