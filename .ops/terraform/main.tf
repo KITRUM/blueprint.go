@@ -20,6 +20,8 @@ terraform {
   required_version = "~>1.4.2"
 }
 
+# Providers definition.
+
 provider "google" {
   project = "golang-blueprint"
   region  = "europe-central2"
@@ -36,6 +38,8 @@ provider "google-beta" {
   credentials = var.json_key_file_content
 }
 
+# Variables
+
 variable "json_key_file_content" {
   type = string
 }
@@ -48,6 +52,23 @@ variable "project" {
 variable "region" {
   type    = string
   default = "europe-central2"
+}
+
+module "sql-db" {
+  source     = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
+  version    = "15.0.0"
+  project_id = var.project
+
+  name             = "${var.project}-pg"
+  database_version = "PostgreSQL 15"
+
+  enable_backups = true
+
+  // HA config
+  high_availability = true
+  zone              = "${var.region}-a"
+  secondary_zone    = "${var.region}-b"
+
 }
 
 module "vpc" {
