@@ -65,9 +65,9 @@ variable "pg_password" {
 }
 
 module "sql-db-access" {
-  source     = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
-  version    = "15.0.0"
-  project_id = var.project
+  source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
+  version     = "15.0.0"
+  project_id  = var.project
   vpc_network = module.vpc.network_name
 }
 
@@ -104,10 +104,11 @@ module "sql-db" {
   ]
 
   ip_configuration = {
-    ipv4_enabled       = true
-    require_ssl        = true
-    private_network    = null
-    allocated_ip_range = null
+    ipv4_enabled        = true
+    require_ssl         = true
+    private_network     = null
+    allocated_ip_range  = null
+    authorized_networks = []
   }
 
   backup_configuration = {
