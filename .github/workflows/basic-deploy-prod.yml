@@ -1,9 +1,13 @@
 name: Basic Deploy
 
 on:
+  release:
+    types:
+      - created
+
   push:
     paths:
-      - '.github/workflows/basic-deploy.yml'
+      - '.github/workflows/basic-deploy-prod.yml'
       - 'basic/**'
     branches:
       - main
@@ -62,11 +66,8 @@ jobs:
           --build-arg BRANCH=${{ github.ref }} \
           --build-arg COMMIT=${{ github.sha }} \
           -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }} \
-          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest \
           .
 
       - name: Docker push
         run: |
           docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }}
-          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest
-
