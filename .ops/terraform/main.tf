@@ -64,12 +64,12 @@ variable "pg_password" {
   default = "password"
 }
 
-module "sql-db-access" {
-  source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
-  version     = "15.0.0"
-  project_id  = var.project
-  vpc_network = module.vpc.network_name
-}
+#module "sql-db-access" {
+#  source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
+#  version     = "15.0.0"
+#  project_id  = var.project
+#  vpc_network = module.vpc.network_name
+#}
 
 module "sql-db" {
   source     = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
