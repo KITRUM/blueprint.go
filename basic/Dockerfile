@@ -4,8 +4,7 @@ FROM golang:1.20-alpine AS BUILDER
 ARG BRANCH
 ARG COMMIT
 
-RUN apk add --no-cache ca-certificates build-base git
-RUN mkdir -p /app
+RUN apk add --no-cache ca-certificates build-base git && mkdir -p /app
 WORKDIR /app
 COPY go.mod .
 COPY go.sum .

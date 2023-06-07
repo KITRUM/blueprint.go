@@ -54,21 +54,74 @@ variable "region" {
   default = "europe-central2"
 }
 
+variable "pg_user" {
+  type    = string
+  default = ""
+}
+
+variable "pg_password" {
+  type    = string
+  default = ""
+}
+
+module "sql-db-access" {
+  source     = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
+  version    = "15.0.0"
+  project_id = var.project
+  vpc_network = module.vpc.network_name
+}
+
 module "sql-db" {
   source     = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
   version    = "15.0.0"
   project_id = var.project
+  region     = var.region
+  zone       = "${var.region}-a"
 
   name             = "${var.project}-pg"
-  database_version = "PostgreSQL 15"
+  database_version = "POSTGRES_15"
 
-  enable_backups = true
+  availability_type               = "REGIONAL"
+  maintenance_window_day          = 7
+  maintenance_window_hour         = 12
+  maintenance_window_update_track = "stable"
 
-  // HA config
-  high_availability = true
-  zone              = "${var.region}-a"
-  secondary_zone    = "${var.region}-b"
+  db_name      = "${var.project}-pg-prod"
+  db_charset   = "UTF8"
+  db_collation = "en_US.UTF8"
 
+  additional_databases = [
+    {
+      name      = "${var.project}-pg-dev"
+      charset   = "UTF8"
+      collation = "en_US.UTF8"
+    },
+    {
+      name      = "${var.project}-pg-stage"
+      charset   = "UTF8"
+      collation = "en_US.UTF8"
+    },
+  ]
+
+  ip_configuration = {
+    ipv4_enabled       = true
+    require_ssl        = true
+    private_network    = null
+    allocated_ip_range = null
+  }
+
+  backup_configuration = {
+    enabled                        = true
+    start_time                     = "20:55"
+    location                       = null
+    point_in_time_recovery_enabled = false
+    transaction_log_retention_days = null
+    retained_backups               = 365
+    retention_unit                 = "COUNT"
+  }
+
+  user_name     = var.pg_user
+  user_password = var.pg_password
 }
 
 module "vpc" {
