@@ -56,12 +56,12 @@ variable "region" {
 
 variable "pg_user" {
   type    = string
-  default = ""
+  default = "user"
 }
 
 variable "pg_password" {
   type    = string
-  default = ""
+  default = "password"
 }
 
 module "sql-db-access" {
