@@ -277,7 +277,7 @@ resource "google_cloud_run_v2_service" "dev" {
 
       env {
         name  = "DB_CONN_STR"
-        value = "host=${module.sql-db.public_ip_address} user=${var.pg_user} password=${var.pg_password} port=5432 database=${var.project}-pg-dev"
+        value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.public_ip_address}:5432/${var.project}-pg-dev"
       }
 
       env {
