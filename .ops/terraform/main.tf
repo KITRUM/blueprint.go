@@ -145,6 +145,9 @@ module "sql-db" {
       disk_size             = null
       disk_type             = "PD_HDD"
       encryption_key_name   = null
+      user_labels           = {
+        terraform = "true"
+      }
     }
   ]
 
