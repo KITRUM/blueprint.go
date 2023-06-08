@@ -110,23 +110,35 @@ module "sql-db" {
     require_ssl         = true
     private_network     = null
     allocated_ip_range  = null
-    authorized_networks = []
+    authorized_networks = [
+      {
+        name  = "wfh"
+        value = "85.57.71.73/32"
+      }
+    ]
   }
 
   read_replica_name_suffix = "-replica"
   read_replicas            = [
     {
       name              = "0"
-      zone              = "us-central1-a"
+      zone              = "${var.region}-b"
       availability_type = "REGIONAL"
       tier              = "db-f1-micro"
-      ip_configuration  = {
+
+      ip_configuration = {
         ipv4_enabled        = true
         require_ssl         = true
         private_network     = null
         allocated_ip_range  = null
-        authorized_networks = []
+        authorized_networks = [
+          {
+            name  = "wfh"
+            value = "85.57.71.73/32"
+          }
+        ]
       }
+
       database_flags        = []
       disk_autoresize       = null
       disk_autoresize_limit = null
