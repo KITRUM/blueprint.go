@@ -259,8 +259,6 @@ resource "google_cloud_run_v2_service" "dev" {
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
-  autogenerate_revision_name = true
-
   template {
     scaling {
       min_instance_count = 1
