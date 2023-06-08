@@ -266,7 +266,7 @@ resource "google_cloud_run_v2_service" "dev" {
     }
 
     containers {
-      image = "${google_artifact_registry_repository.basic.id}/api"
+      image = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
 
       args = [
         "serve",
