@@ -268,13 +268,22 @@ resource "google_cloud_run_v2_service" "dev" {
     containers {
       image = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
 
-      args = [
-        "serve",
-        "-env=dev",
-        "-http-addr=:8080",
-        "-db-conn-str='host=${module.sql-db.instance_ip_address} user=${var.pg_user} password=${var.pg_password} port=5432 database=${var.project}-pg-dev'",
-        "-db-migrate",
-      ]
+      args = ["serve"]
+
+      env {
+        name  = "ENV"
+        value = "dev"
+      }
+
+      env {
+        name  = "DB_CONN_STR"
+        value = "host=${module.sql-db.public_ip_address} user=${var.pg_user} password=${var.pg_password} port=5432 database=${var.project}-pg-dev"
+      }
+
+      env {
+        name  = "DB_MIGRATE"
+        value = "true"
+      }
 
       liveness_probe {
         failure_threshold = 3
