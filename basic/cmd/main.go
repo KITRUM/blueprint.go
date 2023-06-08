@@ -60,7 +60,7 @@ func main() {
 
 func ServeCommand() *cli.Command {
 	cfg := struct {
-		Env       string `validate:"oneof=dev test prod"`
+		Env       string `validate:"oneof=dev stage prod"`
 		LogLevel  string
 		HTTPAddr  string
 		DBConnStr string

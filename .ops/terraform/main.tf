@@ -271,6 +271,14 @@ module "serverless_connector" {
   ]
 }
 
+module "service_account" {
+  source     = "terraform-google-modules/service-accounts/google"
+  version    = "~> 4.1.1"
+  project_id = var.project
+  prefix     = "sa-cloud-run"
+  names      = ["vpc-connector"]
+}
+
 # GCR
 
 resource "google_artifact_registry_repository" "basic" {
@@ -279,15 +287,7 @@ resource "google_artifact_registry_repository" "basic" {
   location      = var.region
 }
 
-# Cloud Run
-
-module "service_account" {
-  source     = "terraform-google-modules/service-accounts/google"
-  version    = "~> 4.1.1"
-  project_id = var.project
-  prefix     = "sa-cloud-run"
-  names      = ["vpc-connector"]
-}
+# Cloud Run DEV
 
 module "cloud_run" {
   source  = "GoogleCloudPlatform/cloud-run/google"
@@ -339,3 +339,111 @@ resource "google_cloud_run_service_iam_binding" "noauth-dev" {
     "allUsers"
   ]
 }
+
+# Cloud Run STAGE
+
+module "cloud_run_stage" {
+  source  = "GoogleCloudPlatform/cloud-run/google"
+  version = "~> 0.2.0"
+
+  service_name = "basic-stage"
+  project_id   = var.project
+  location     = var.region
+  image        = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
+
+  service_account_email = module.service_account.email
+
+  ports = {
+    "name" : "http1",
+    "port" : 8080
+  }
+
+  argument = ["serve"]
+
+  env_vars = [
+    {
+      name  = "ENV"
+      value = "stage"
+    },
+    {
+      name  = "DB_CONN_STR"
+      value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.private_ip_address}:5432/${var.project}-pg-stage"
+    },
+    {
+      name  = "DB_MIGRATE"
+      value = "true"
+    }
+  ]
+
+  template_annotations = {
+    "autoscaling.knative.dev/maxScale"        = 3
+    "autoscaling.knative.dev/minScale"        = 1
+    "run.googleapis.com/cloudsql-instances"   = module.sql-db.instance_connection_name
+    "run.googleapis.com/vpc-access-connector" = element(tolist(module.serverless_connector.connector_ids), 1)
+    "run.googleapis.com/vpc-access-egress"    = "all-traffic"
+  }
+}
+
+resource "google_cloud_run_service_iam_binding" "noauth-stage" {
+  location = module.cloud_run_stage.location
+  service  = module.cloud_run_stage.service_name
+  role     = "roles/run.invoker"
+  members = [
+    "allUsers"
+  ]
+}
+
+# Cloud Run PROD
+
+module "cloud_run_prod" {
+  source  = "GoogleCloudPlatform/cloud-run/google"
+  version = "~> 0.2.0"
+
+  service_name = "basic-prod"
+  project_id   = var.project
+  location     = var.region
+  image        = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
+
+  service_account_email = module.service_account.email
+
+  ports = {
+    "name" : "http1",
+    "port" : 8080
+  }
+
+  argument = ["serve"]
+
+  env_vars = [
+    {
+      name  = "ENV"
+      value = "prod"
+    },
+    {
+      name  = "DB_CONN_STR"
+      value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.private_ip_address}:5432/${var.project}-pg-prod"
+    },
+    {
+      name  = "DB_MIGRATE"
+      value = "true"
+    }
+  ]
+
+  template_annotations = {
+    "autoscaling.knative.dev/maxScale"        = 3
+    "autoscaling.knative.dev/minScale"        = 1
+    "run.googleapis.com/cloudsql-instances"   = module.sql-db.instance_connection_name
+    "run.googleapis.com/vpc-access-connector" = element(tolist(module.serverless_connector.connector_ids), 1)
+    "run.googleapis.com/vpc-access-egress"    = "all-traffic"
+  }
+}
+
+resource "google_cloud_run_service_iam_binding" "noauth-prod" {
+  location = module.cloud_run_prod.location
+  service  = module.cloud_run_prod.service_name
+  role     = "roles/run.invoker"
+  members = [
+    "allUsers"
+  ]
+}
+
+
