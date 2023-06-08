@@ -64,12 +64,34 @@ variable "pg_password" {
   default = "password"
 }
 
+variable "db_tier" {
+  type    = string
+  default = "db-f1-micro"
+}
+
 module "sql-db-access" {
   source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
   version     = "15.0.0"
   project_id  = var.project
   vpc_network = module.vpc.network_name
 }
+
+locals {
+  ip_config = {
+    ipv4_enabled                                  = true
+    require_ssl                                   = false
+    private_network                               = module.vpc.network_id
+    enable_private_path_for_google_cloud_services = true
+    allocated_ip_range                            = null
+    authorized_networks                           = [
+      {
+        name  = "wfh"
+        value = "85.57.71.73/32"
+      }
+    ]
+  }
+}
+
 
 module "sql-db" {
   source     = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
@@ -86,7 +108,7 @@ module "sql-db" {
   maintenance_window_hour         = 12
   maintenance_window_update_track = "stable"
 
-  tier = "db-f1-micro"
+  tier = var.db_tier
 
   db_name      = "${var.project}-pg-prod"
   db_charset   = "UTF8"
@@ -105,18 +127,7 @@ module "sql-db" {
     },
   ]
 
-  ip_configuration = {
-    ipv4_enabled        = true
-    require_ssl         = true
-    private_network     = null
-    allocated_ip_range  = null
-    authorized_networks = [
-      {
-        name  = "wfh"
-        value = "85.57.71.73/32"
-      }
-    ]
-  }
+  ip_configuration = local.ip_config
 
   read_replica_name_suffix = "-replica"
   read_replicas            = [
@@ -124,27 +135,15 @@ module "sql-db" {
       name              = "0"
       zone              = "${var.region}-b"
       availability_type = "REGIONAL"
-      tier              = "db-f1-micro"
+      tier              = var.db_tier
 
-      ip_configuration = {
-        ipv4_enabled        = true
-        require_ssl         = true
-        private_network     = null
-        allocated_ip_range  = null
-        authorized_networks = [
-          {
-            name  = "wfh"
-            value = "85.57.71.73/32"
-          }
-        ]
-      }
+      ip_configuration = local.ip_config
 
       database_flags        = []
       disk_autoresize       = null
       disk_autoresize_limit = null
       disk_size             = null
       disk_type             = "PD_HDD"
-      user_labels           = { bar = "baz" }
       encryption_key_name   = null
     }
   ]
@@ -161,6 +160,24 @@ module "sql-db" {
 
   user_name     = var.pg_user
   user_password = var.pg_password
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  provider = google-beta
+
+  network                 = module.vpc.network_id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
+
+resource "google_compute_global_address" "private_ip_address" {
+  provider = google-beta
+
+  name          = "db-private-ip"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = module.vpc.network_id
 }
 
 module "vpc" {
