@@ -1,4 +1,4 @@
-namespace: basic
+namespace: dev
 replicaCount: 2
 
 image:

@@ -3,21 +3,6 @@ kind: Service
 metadata:
   name: "{{ .Chart.Name }}"
   namespace: {{ .Values.namespace }}
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: "{{ .Values.service.subdomain }}.{{ .Values.service.domain }}"
-    kubernetes.digitalocean.com/load-balancer-id: {{ .Chart.Name }}
-    service.beta.kubernetes.io/do-loadbalancer-name: "{{ .Values.service.domain }}"
-    service.beta.kubernetes.io/do-loadbalancer-size-unit: "{{ .Values.service.loadBalancer.size }}"
-    service.beta.kubernetes.io/do-loadbalancer-protocol: {{ .Values.service.loadBalancer.protocol }}
-    service.beta.kubernetes.io/do-loadbalancer-certificate-id: {{ .Values.service.loadBalancer.certID }}
-    service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
-    service.beta.kubernetes.io/do-loadbalancer-disable-lets-encrypt-dns-records: "true"
-    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/health"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "10"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
-    service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "2"
   labels:
     helm.sh/chart: {{ .Chart.Name }}
 spec:

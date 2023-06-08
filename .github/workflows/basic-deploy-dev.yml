@@ -55,6 +55,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_JSON_KEY }}
 
       - uses: google-github-actions/setup-gcloud@v1
+
       - run: gcloud auth configure-docker europe-central2-docker.pkg.dev
 
       - name: Docker build
@@ -70,4 +71,10 @@ jobs:
         run: |
           docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }}
           docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest
+
+      - run: |
+          gcloud run services update basic-dev \
+          --image europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }} \
+          --project golang-blueprint \
+          --region europe-central2
           
