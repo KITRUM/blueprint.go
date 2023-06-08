@@ -86,6 +86,8 @@ module "sql-db" {
   maintenance_window_hour         = 12
   maintenance_window_update_track = "stable"
 
+  tier = "db-f1-micro"
+
   db_name      = "${var.project}-pg-prod"
   db_charset   = "UTF8"
   db_collation = "en_US.UTF8"
@@ -110,6 +112,30 @@ module "sql-db" {
     allocated_ip_range  = null
     authorized_networks = []
   }
+
+  read_replica_name_suffix = "-replica"
+  read_replicas            = [
+    {
+      name              = "0"
+      zone              = "us-central1-a"
+      availability_type = "REGIONAL"
+      tier              = "db-f1-micro"
+      ip_configuration  = {
+        ipv4_enabled        = true
+        require_ssl         = true
+        private_network     = null
+        allocated_ip_range  = null
+        authorized_networks = []
+      }
+      database_flags        = []
+      disk_autoresize       = null
+      disk_autoresize_limit = null
+      disk_size             = null
+      disk_type             = "PD_HDD"
+      user_labels           = { bar = "baz" }
+      encryption_key_name   = null
+    }
+  ]
 
   backup_configuration = {
     enabled                        = true
