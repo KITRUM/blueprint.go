@@ -300,12 +300,10 @@ module "cloud_run" {
 
   service_account_email = module.service_account.email
 
-  ports = [
-    {
-      "name" : "http",
-      "port" : 8080
-    }
-  ]
+  ports = {
+    "name" : "http",
+    "port" : 8080
+  }
 
   env_vars = [
     {
