@@ -272,7 +272,7 @@ resource "google_cloud_run_v2_service" "dev" {
         "serve",
         "-env=dev",
         "-http-addr=:8080",
-        "-db-conn-str='host=${module.sql-db.public_ip_address} user=${var.pg_user} password=${var.pg_password} port=5432 database=${var.project}-pg-dev'",
+        "-db-conn-str='host=${module.sql-db.instance_ip_address} user=${var.pg_user} password=${var.pg_password} port=5432 database=${var.project}-pg-dev'",
         "-db-migrate",
       ]
 
