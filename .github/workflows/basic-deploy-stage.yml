@@ -1,4 +1,4 @@
-name: Basic Deploy
+name: Basic Deploy STAGE
 
 on:
   push:

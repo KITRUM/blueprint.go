@@ -1,4 +1,4 @@
-name: Basic Deploy
+name: Basic Deploy DEV
 
 on:
   push:

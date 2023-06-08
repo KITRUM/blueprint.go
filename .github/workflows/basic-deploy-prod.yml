@@ -1,16 +1,12 @@
-name: Basic Deploy
+name: Basic Deploy PROD
 
 on:
   release:
-    types:
-      - created
-
-  push:
     paths:
       - '.github/workflows/basic-deploy-prod.yml'
       - 'basic/**'
-    branches:
-      - main
+    types:
+      - created
 
 defaults:
   run:
