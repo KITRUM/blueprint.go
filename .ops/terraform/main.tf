@@ -76,6 +76,8 @@ module "sql-db-access" {
   vpc_network = module.vpc.network_name
 }
 
+# Cloud SQL
+
 locals {
   ip_config = {
     ipv4_enabled                                  = true
@@ -91,7 +93,6 @@ locals {
     ]
   }
 }
-
 
 module "sql-db" {
   source     = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
@@ -183,6 +184,8 @@ resource "google_compute_global_address" "private_ip_address" {
   network       = module.vpc.network_id
 }
 
+# VPC
+
 module "vpc" {
   source  = "terraform-google-modules/network/google"
   version = "~> 7.0"
@@ -241,8 +244,53 @@ module "vpc" {
   ]
 }
 
+# GCR
+
 resource "google_artifact_registry_repository" "basic" {
   format        = "DOCKER"
   repository_id = "${var.project}-basic"
   location      = var.region
+}
+
+# Cloud Run
+
+resource "google_cloud_run_v2_service" "dev" {
+  name     = "basic-dev"
+  location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  autogenerate_revision_name = true
+
+  template {
+    scaling {
+      min_instance_count = 1
+      max_instance_count = 3
+    }
+
+    containers {
+      image = google_artifact_registry_repository.basic.id
+
+      args = [
+        "serve",
+        "-env=dev",
+        "-http-addr=:8080",
+        "-db-conn-str='host=${module.sql-db.public_ip_address} user=${var.pg_user} password=${var.pg_password} port=5432 database=${var.project}-pg-dev'",
+        "-db-migrate",
+      ]
+
+      liveness_probe {
+        failure_threshold = 3
+        timeout_seconds   = 5
+        period_seconds    = 10
+
+        http_get {
+          path = "/health"
+        }
+      }
+
+      ports {
+        container_port = 8080
+      }
+    }
+  }
 }

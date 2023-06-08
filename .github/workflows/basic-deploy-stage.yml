@@ -4,11 +4,6 @@ on:
   push:
     tags:
       - "v1.*"
-    paths:
-      - '.github/workflows/basic-deploy-stage.yml'
-      - 'basic/**'
-    branches:
-      - main
 
 defaults:
   run:
@@ -42,6 +37,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    environment: stage
     needs:
       - test
       - lint
