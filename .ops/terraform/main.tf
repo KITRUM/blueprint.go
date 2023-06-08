@@ -260,7 +260,7 @@ module "serverless_connector" {
 
   vpc_connectors = [
     {
-      name            = "${var.region}-serverless"
+      name            = "eurserverlessconn"
       region          = var.region
       subnet_name     = module.vpc.subnets["${var.region}/cloud-run-subnet"]["name"]
       host_project_id = var.project
