@@ -1,9 +1,9 @@
-name: Basic Deploy DEV
+name: Basic Deploy PROD
 
 on:
   release:
     types:
-      - created
+      - released
 
 defaults:
   run:
