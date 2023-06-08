@@ -265,7 +265,7 @@ module "serverless_connector" {
       subnet_name     = module.vpc.subnets["${var.region}/cloud-run-subnet"]["name"]
       host_project_id = var.project
       machine_type    = "f1-micro"
-      min_instances   = 1
+      min_instances   = 2
       max_instances   = 3
     }
   ]
