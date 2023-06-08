@@ -264,8 +264,8 @@ module "serverless_connector" {
       region          = var.region
       subnet_name     = module.vpc.subnets["${var.region}/cloud-run-subnet"]["name"]
       host_project_id = var.project
-      machine_type    = "e2-micro"
-      min_instances   = 2
+      machine_type    = "f1-micro"
+      min_instances   = 1
       max_instances   = 3
     }
   ]
@@ -304,6 +304,8 @@ module "cloud_run" {
     "name" : "http1",
     "port" : 8080
   }
+
+  argument = ["serve"]
 
   env_vars = [
     {
