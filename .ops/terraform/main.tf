@@ -230,6 +230,14 @@ module "vpc" {
       subnet_ip     = "10.0.13.0/24"
       subnet_region = var.region
       subnet_type   = "private"
+    },
+    {
+      subnet_name           = "cloud-run-subnet"
+      subnet_ip             = "10.10.0.0/28"
+      subnet_region         = var.region
+      subnet_private_access = "true"
+      subnet_flow_logs      = "false"
+      description           = "Cloud Run VPC Connector Subnet"
     }
   ]
 
@@ -244,6 +252,25 @@ module "vpc" {
   ]
 }
 
+module "serverless_connector" {
+  source  = "terraform-google-modules/network/google//modules/vpc-serverless-connector-beta"
+  version = "~> 4.0"
+
+  project_id = var.project
+
+  vpc_connectors = [
+    {
+      name            = "${var.region}-serverless"
+      region          = var.region
+      subnet_name     = module.vpc.subnets["${var.region}/cloud-run-subnet"]["name"]
+      host_project_id = var.project
+      machine_type    = "e2-micro"
+      min_instances   = 2
+      max_instances   = 3
+    }
+  ]
+}
+
 # GCR
 
 resource "google_artifact_registry_repository" "basic" {
@@ -254,50 +281,102 @@ resource "google_artifact_registry_repository" "basic" {
 
 # Cloud Run
 
-resource "google_cloud_run_v2_service" "dev" {
-  name     = "basic-dev"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+module "service_account" {
+  source     = "terraform-google-modules/service-accounts/google"
+  version    = "~> 4.1.1"
+  project_id = var.project
+  prefix     = "sa-cloud-run"
+  names      = ["vpc-connector"]
+}
 
-  template {
-    scaling {
-      min_instance_count = 1
-      max_instance_count = 3
+module "cloud_run" {
+  source  = "GoogleCloudPlatform/cloud-run/google"
+  version = "~> 0.2.0"
+
+  service_name = "basic-dev"
+  project_id   = var.project
+  location     = var.region
+  image        = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
+
+  service_account_email = module.service_account.email
+
+  ports = [
+    {
+      "name" : "http",
+      "port" : 8080
     }
+  ]
 
-    containers {
-      image = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
-
-      args = ["serve"]
-
-      env {
-        name  = "ENV"
-        value = "dev"
-      }
-
-      env {
-        name  = "DB_CONN_STR"
-        value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.public_ip_address}:5432/${var.project}-pg-dev"
-      }
-
-      env {
-        name  = "DB_MIGRATE"
-        value = "true"
-      }
-
-      liveness_probe {
-        failure_threshold = 3
-        timeout_seconds   = 5
-        period_seconds    = 10
-
-        http_get {
-          path = "/health"
-        }
-      }
-
-      ports {
-        container_port = 8080
-      }
+  env_vars = [
+    {
+      name  = "ENV"
+      value = "dev"
+    },
+    {
+      name  = "DB_CONN_STR"
+      value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.private_ip_address}:5432/${var.project}-pg-dev"
+    },
+    {
+      name  = "DB_MIGRATE"
+      value = "true"
     }
+  ]
+
+  template_annotations = {
+    "autoscaling.knative.dev/maxScale"        = 3
+    "autoscaling.knative.dev/minScale"        = 1
+    "run.googleapis.com/cloudsql-instances"   = module.sql-db.instance_connection_name
+    "run.googleapis.com/vpc-access-connector" = element(tolist(module.serverless_connector.connector_ids), 1)
+    "run.googleapis.com/vpc-access-egress"    = "all-traffic"
   }
 }
+
+#resource "google_cloud_run_v2_service" "dev" {
+#  name     = "basic-dev"
+#  location = var.region
+#  ingress  = "INGRESS_TRAFFIC_ALL"
+#
+#  launch_stage = ""
+#
+#  template {
+#    scaling {
+#      min_instance_count = 1
+#      max_instance_count = 3
+#    }
+#
+#    containers {
+#      image = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
+#
+#      args = ["serve"]
+#
+#      env {
+#        name  = "ENV"
+#        value = "dev"
+#      }
+#
+#      env {
+#        name  = "DB_CONN_STR"
+#        value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.public_ip_address}:5432/${var.project}-pg-dev"
+#      }
+#
+#      env {
+#        name  = "DB_MIGRATE"
+#        value = "true"
+#      }
+#
+#      liveness_probe {
+#        failure_threshold = 3
+#        timeout_seconds   = 5
+#        period_seconds    = 10
+#
+#        http_get {
+#          path = "/health"
+#        }
+#      }
+#
+#      ports {
+#        container_port = 8080
+#      }
+#    }
+#  }
+#}
