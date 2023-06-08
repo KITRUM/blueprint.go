@@ -331,52 +331,11 @@ module "cloud_run" {
   }
 }
 
-#resource "google_cloud_run_v2_service" "dev" {
-#  name     = "basic-dev"
-#  location = var.region
-#  ingress  = "INGRESS_TRAFFIC_ALL"
-#
-#  launch_stage = ""
-#
-#  template {
-#    scaling {
-#      min_instance_count = 1
-#      max_instance_count = 3
-#    }
-#
-#    containers {
-#      image = "europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest"
-#
-#      args = ["serve"]
-#
-#      env {
-#        name  = "ENV"
-#        value = "dev"
-#      }
-#
-#      env {
-#        name  = "DB_CONN_STR"
-#        value = "postgres://${var.pg_user}:${var.pg_password}@${module.sql-db.public_ip_address}:5432/${var.project}-pg-dev"
-#      }
-#
-#      env {
-#        name  = "DB_MIGRATE"
-#        value = "true"
-#      }
-#
-#      liveness_probe {
-#        failure_threshold = 3
-#        timeout_seconds   = 5
-#        period_seconds    = 10
-#
-#        http_get {
-#          path = "/health"
-#        }
-#      }
-#
-#      ports {
-#        container_port = 8080
-#      }
-#    }
-#  }
-#}
+resource "google_cloud_run_service_iam_binding" "noauth-dev" {
+  location = module.cloud_run.location
+  service  = module.cloud_run.service_name
+  role     = "roles/run.invoker"
+  members = [
+    "allUsers"
+  ]
+}
