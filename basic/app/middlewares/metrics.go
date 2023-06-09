@@ -13,12 +13,12 @@ import (
 
 var (
 	RespDurSec = promauto.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "response_duration_seconds",
+		Name:    "requests_duration_seconds",
 		Buckets: []float64{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1},
 	}, []string{"method", "route", "code"})
 
 	RespTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "responses_total",
+		Name: "requests_total",
 	}, []string{"method", "route", "code"})
 )
 
