@@ -3,7 +3,7 @@ name: Basic Deploy PROD
 on:
   release:
     types:
-      - published
+      - released
 
 defaults:
   run:
