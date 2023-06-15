@@ -92,7 +92,6 @@ module "gke" {
   ip_range_pods     = "${var.project}-gke-pods"
   ip_range_services = "${var.project}-gke-services"
 
-  create_service_account     = true
   http_load_balancing        = true
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = true
