@@ -89,8 +89,8 @@ module "gke" {
   description       = "${var.project}-gke"
   network           = module.vpc.network_name
   subnetwork        = "public-${var.region}-1"
-  ip_range_pods     = "public-${var.region}-1-gke-pods"
-  ip_range_services = "public-${var.region}-1-gke-services"
+  ip_range_pods     = "public-${var.region}-1"
+  ip_range_services = "public-${var.region}-2"
 
   http_load_balancing        = true
   horizontal_pod_autoscaling = true
