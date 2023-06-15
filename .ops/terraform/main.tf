@@ -88,7 +88,7 @@ module "gke" {
   name              = "${var.project}-gke"
   description       = "${var.project}-gke"
   network           = module.vpc.network_name
-  subnetwork        = module.vpc.network_name
+  subnetwork        = module.vpc.subnets_names[0]
   ip_range_pods     = "${var.project}-gke-pods"
   ip_range_services = "${var.project}-gke-services"
 
