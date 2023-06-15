@@ -69,14 +69,74 @@ variable "db_tier" {
   default = "db-f1-micro"
 }
 
+# GKE
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host                   = "https://${module.gke.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+}
+
+module "gke" {
+  source     = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster"
+  project_id = var.project
+
+  region   = var.region
+  regional = true
+
+  name              = "${var.project}-gke"
+  description       = "${var.project}-gke"
+  network           = module.vpc.network_name
+  subnetwork        = module.vpc.network_name
+  ip_range_pods     = "${var.project}-gke-pods"
+  ip_range_services = "${var.project}-gke-services"
+
+  create_service_account     = true
+  http_load_balancing        = true
+  horizontal_pod_autoscaling = true
+  filestore_csi_driver       = true
+  istio                      = true
+  cloudrun                   = true
+  dns_cache                  = false
+
+  node_pools = [
+    {
+      name                      = "${var.project}-default-pool"
+      machine_type              = "e2-micro"
+      min_count                 = 1
+      max_count                 = 3
+      initial_node_count        = 1
+      local_ssd_count           = 0
+      spot                      = false
+      local_ssd_ephemeral_count = 0
+      disk_size_gb              = 100
+      disk_type                 = "pd-standard"
+      image_type                = "COS_CONTAINERD"
+      enable_gcfs               = false
+      enable_gvnic              = false
+      auto_repair               = true
+      auto_upgrade              = true
+      preemptible               = false
+    },
+  ]
+
+  node_pools_oauth_scopes = {
+    all = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+    ]
+  }
+}
+
+# Cloud SQL
+
 module "sql-db-access" {
   source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
   version     = "15.0.0"
   project_id  = var.project
   vpc_network = module.vpc.network_name
 }
-
-# Cloud SQL
 
 locals {
   ip_config = {
@@ -335,7 +395,7 @@ resource "google_cloud_run_service_iam_binding" "noauth-dev" {
   location = module.cloud_run.location
   service  = module.cloud_run.service_name
   role     = "roles/run.invoker"
-  members = [
+  members  = [
     "allUsers"
   ]
 }
@@ -388,7 +448,7 @@ resource "google_cloud_run_service_iam_binding" "noauth-stage" {
   location = module.cloud_run_stage.location
   service  = module.cloud_run_stage.service_name
   role     = "roles/run.invoker"
-  members = [
+  members  = [
     "allUsers"
   ]
 }
@@ -441,7 +501,7 @@ resource "google_cloud_run_service_iam_binding" "noauth-prod" {
   location = module.cloud_run_prod.location
   service  = module.cloud_run_prod.service_name
   role     = "roles/run.invoker"
-  members = [
+  members  = [
     "allUsers"
   ]
 }

@@ -1,9 +1,9 @@
 name: Basic Deploy STAGE
 
 on:
-  release:
-    types:
-      - prereleased
+  push:
+    tags:
+      - "v1.*"
 
 defaults:
   run:
