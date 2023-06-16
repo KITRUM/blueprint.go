@@ -38,6 +38,12 @@ provider "google-beta" {
   credentials = var.json_key_file_content
 }
 
+provider "kubernetes" {
+  host                   = "https://${module.gke.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+}
+
 # Variables
 
 variable "json_key_file_content" {
@@ -69,14 +75,36 @@ variable "db_tier" {
   default = "db-f1-micro"
 }
 
-# GKE
+locals {
+  pods_range_name = "ip-range-pods-${random_string.suffix.result}"
+  svc_range_name  = "ip-range-svc-${random_string.suffix.result}"
+
+  ip_config = {
+    ipv4_enabled                                  = true
+    require_ssl                                   = false
+    private_network                               = module.vpc.network_id
+    enable_private_path_for_google_cloud_services = true
+    allocated_ip_range                            = null
+    authorized_networks                           = [
+      {
+        name  = "wfh"
+        value = "85.57.71.73/32"
+      }
+    ]
+  }
+}
+
+# Helpers data nad resources
+
 data "google_client_config" "default" {}
 
-provider "kubernetes" {
-  host                   = "https://${module.gke.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+resource "random_string" "suffix" {
+  length  = 4
+  special = false
+  upper   = false
 }
+
+# GKE
 
 module "gke" {
   source     = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster"
@@ -135,22 +163,6 @@ module "sql-db-access" {
   version     = "15.0.0"
   project_id  = var.project
   vpc_network = module.vpc.network_name
-}
-
-locals {
-  ip_config = {
-    ipv4_enabled                                  = true
-    require_ssl                                   = false
-    private_network                               = module.vpc.network_id
-    enable_private_path_for_google_cloud_services = true
-    allocated_ip_range                            = null
-    authorized_networks                           = [
-      {
-        name  = "wfh"
-        value = "85.57.71.73/32"
-      }
-    ]
-  }
 }
 
 module "sql-db" {
@@ -299,6 +311,19 @@ module "vpc" {
       description           = "Cloud Run VPC Connector Subnet"
     }
   ]
+
+  secondary_ranges = {
+    ("public-${var.region}-1") = [
+      {
+        range_name    = local.pods_range_name
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = local.svc_range_name
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
 
   routes = [
     {
