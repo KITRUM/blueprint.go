@@ -126,6 +126,7 @@ module "gke" {
   istio                      = true
   cloudrun                   = false
   dns_cache                  = false
+  enable_private_endpoint    = false
 
   node_pools = [
     {
