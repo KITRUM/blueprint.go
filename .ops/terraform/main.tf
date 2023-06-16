@@ -123,11 +123,7 @@ module "gke" {
   http_load_balancing        = true
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = true
-  istio                      = true
-
-  cloudrun                   = false
   dns_cache                  = false
-  enable_private_endpoint    = false
 
   node_pools = [
     {
