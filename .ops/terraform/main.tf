@@ -154,6 +154,8 @@ module "gke" {
       "https://www.googleapis.com/auth/monitoring",
     ]
   }
+
+  depends_on = [local.svc_range_name, local.pods_range_name]
 }
 
 # Cloud SQL
