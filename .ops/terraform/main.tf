@@ -107,7 +107,7 @@ resource "random_string" "suffix" {
 # GKE
 
 module "gke" {
-  source     = "terraform-google-modules/kubernetes-engine/google//modules/safer-cluster"
+  source     = "terraform-google-modules/kubernetes-engine/google"
   project_id = var.project
 
   region   = var.region
@@ -124,6 +124,7 @@ module "gke" {
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = true
   istio                      = true
+
   cloudrun                   = false
   dns_cache                  = false
   enable_private_endpoint    = false
@@ -141,20 +142,11 @@ module "gke" {
       disk_size_gb              = 100
       disk_type                 = "pd-standard"
       image_type                = "COS_CONTAINERD"
-      enable_gcfs               = false
-      enable_gvnic              = false
       auto_repair               = true
       auto_upgrade              = true
       preemptible               = false
     },
   ]
-
-  node_pools_oauth_scopes = {
-    all = [
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring",
-    ]
-  }
 
   depends_on = [local.svc_range_name, local.pods_range_name]
 }
