@@ -124,7 +124,7 @@ module "gke" {
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = true
   istio                      = true
-  cloudrun                   = true
+  cloudrun                   = false
   dns_cache                  = false
 
   node_pools = [
