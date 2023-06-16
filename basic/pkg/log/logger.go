@@ -15,6 +15,16 @@ type Logger interface {
 	Errorf(format string, args ...any)
 }
 
+// DisabledLogger implements Logger interface by doing nothing.
+// Used to disabled logging in places where the Logger is used
+// as a dependency but log output should be omitted.
+func DisabledLogger() Logger { return &disabledLogger{} }
+
+type disabledLogger struct{}
+
+func (disabledLogger) Infof(string, ...any)  {}
+func (disabledLogger) Errorf(string, ...any) {}
+
 // ZeroLogger implements Logger using the github.com/rs/zerolog.
 type ZeroLogger struct {
 	log zerolog.Logger

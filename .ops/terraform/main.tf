@@ -128,12 +128,11 @@ module "gke" {
   node_pools = [
     {
       name                      = "${var.project}-default-pool"
-      machine_type              = "e2-micro"
+      machine_type              = "e2-medium"
       min_count                 = 1
-      max_count                 = 3
+      max_count                 = 1
       initial_node_count        = 1
       local_ssd_count           = 0
-      spot                      = false
       local_ssd_ephemeral_count = 0
       disk_size_gb              = 100
       disk_type                 = "pd-standard"
@@ -141,6 +140,7 @@ module "gke" {
       auto_repair               = true
       auto_upgrade              = true
       preemptible               = false
+      spot                      = false
     },
   ]
 
