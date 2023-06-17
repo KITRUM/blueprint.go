@@ -2,31 +2,24 @@ namespace: dev
 replicaCount: 2
 
 image:
-  repository: ghcr.io/heartwilltell/convertio-api
+  repository: europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api
   pullPolicy: IfNotPresent
   tag: latest
 
 service:
-  loadBalancer:
-    size: 1
-    certID: "4d1390cb-41f8-4b68-836f-098ae110d60c"
-    protocol: "https"
-  domain: convertio.app
-  subdomain: api
   ports:
-    https:
-      port: 443
-      protocol: TCP
     http:
       port: 80
       protocol: TCP
 
 app:
+  env: dev
   ports:
     http:
       port: 8080
       protocol: TCP
   logLevel: debug
   dbConnStr: ""
+  dbMigrate: true
 
 

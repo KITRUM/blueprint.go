@@ -94,3 +94,25 @@ jobs:
           --image europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }} \
           --project golang-blueprint \
           --region europe-central2
+
+  deploy-k8s:
+    environment: dev
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_JSON_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v1
+
+      - run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud container clusters get-credentials golang-blueprint-gke --region europe-central2
+
+      - run: |
+          helm upgrade --install -n dev -f ./basic/helm/values.yaml \
+          --set image.tag=${{ github.sha }} \
+          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic ./basic/helm

@@ -6,7 +6,7 @@ metadata:
   labels:
     helm.sh/chart: {{ .Chart.Name }}
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     helm.sh/chart: {{ .Chart.Name }}
   ports:
@@ -36,8 +36,6 @@ spec:
       labels:
         helm.sh/chart: {{ .Chart.Name }}
     spec:
-      imagePullSecrets:
-        - name: ghcr
       containers:
         - name: "{{ .Chart.Name }}"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -48,9 +46,9 @@ spec:
               protocol: {{ .Values.app.ports.http.protocol }}
           args:
             - "serve"
-            - "-loglvl={{ .Values.app.logLevel }}"
-            - "-httpaddr=:{{ .Values.app.ports.http.port }}"
-            - "-dbconnstr={{.Values.app.dbConnStr }}"
+            - "-http-addr=:{{ .Values.app.ports.http.port }}"
+            - "-db-conn-str={{.Values.app.dbConnStr }}"
+            - "-db-migrate={{ .Values.app.dbMigrate}}"
           livenessProbe:
             initialDelaySeconds: 30
             periodSeconds: 10
