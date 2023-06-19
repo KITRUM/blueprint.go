@@ -10,10 +10,6 @@ spec:
   selector:
     helm.sh/chart: {{ .Chart.Name }}
   ports:
-    - name: https
-      port: {{ .Values.service.ports.https.port }}
-      protocol: {{ .Values.service.ports.https.protocol }}
-      targetPort: {{ .Values.app.ports.http.port }}
     - name: http
       port: {{ .Values.service.ports.http.port }}
       protocol: {{ .Values.service.ports.http.protocol }}
