@@ -147,6 +147,17 @@ module "gke" {
   depends_on = [local.svc_range_name, local.pods_range_name]
 }
 
+# Namespaces
+
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    name   = "dev"
+    labels = {
+      terraform = true
+    }
+  }
+}
+
 # Cloud SQL
 
 module "sql-db-access" {
