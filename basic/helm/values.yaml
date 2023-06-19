@@ -1,5 +1,5 @@
 namespace: dev
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api
