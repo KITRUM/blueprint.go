@@ -113,6 +113,6 @@ jobs:
           gcloud container clusters get-credentials golang-blueprint-gke --region europe-central2
 
       - run: |
-          helm upgrade --install -n dev -f ./basic/helm/values.yaml \
+          helm upgrade --install -n dev -f ./helm/values.yaml \
           --set image.tag=${{ github.sha }} \
-          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic ./basic/helm
+          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic ./helm
