@@ -1,3 +1,13 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "{{ .Chart.Name }}"
+  namespace: {{ .Values.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}
+  annotations:
+
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -42,6 +52,7 @@ spec:
               protocol: {{ .Values.app.ports.http.protocol }}
           args:
             - "serve"
+            - "-env={{ .Values.app.env }}"
             - "-http-addr=:{{ .Values.app.ports.http.port }}"
             - "-db-conn-str={{.Values.app.dbConnStr }}"
             - "-db-migrate={{ .Values.app.dbMigrate}}"
