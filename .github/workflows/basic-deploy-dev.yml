@@ -117,4 +117,4 @@ jobs:
           --set namespace=dev \
           --set app.env=dev \
           --set image.tag=${{ github.sha }} \
-          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic ./helm
+          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic-dev ./helm

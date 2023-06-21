@@ -113,4 +113,4 @@ jobs:
           --set namespace=stage \
           --set app.env=stage \
           --set image.tag=${{ github.sha }} \
-          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic ./helm
+          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic-stage ./helm
