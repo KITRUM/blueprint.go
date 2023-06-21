@@ -125,8 +125,8 @@ func ServeCommand() *cli.Command {
 				Name:        "env",
 				Usage:       "defines app runtime environment",
 				EnvVars:     []string{"ENV"},
-				Destination: &cfg.Env,
 				Value:       "dev",
+				Destination: &cfg.Env,
 			},
 			&cli.StringFlag{
 				Name:        "http-addr",
