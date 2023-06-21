@@ -6,7 +6,6 @@ on:
     types:
       - released
 
-
 defaults:
   run:
     working-directory: basic
