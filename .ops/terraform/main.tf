@@ -125,10 +125,12 @@ module "gke" {
   ip_range_pods     = local.pods_range_name
   ip_range_services = local.svc_range_name
 
+  grant_registry_access      = true
   http_load_balancing        = true
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = true
   dns_cache                  = false
+
 
   node_pools = [
     {
