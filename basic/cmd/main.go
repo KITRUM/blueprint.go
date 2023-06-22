@@ -132,8 +132,8 @@ func ServeCommand() *cli.Command {
 				Name:        "http-addr",
 				Usage:       "defines HTTP listener address",
 				EnvVars:     []string{"HTTP_ADDR"},
-				Value:       ":8080",
 				Destination: &cfg.HTTPAddr,
+				Value:       ":8080",
 			},
 			&cli.StringFlag{
 				Name:        "db-conn-str",

@@ -137,8 +137,8 @@ module "gke" {
       name                      = "${var.project}-default-pool"
       machine_type              = "e2-medium"
       min_count                 = 1
-      max_count                 = 1
-      initial_node_count        = 1
+      max_count                 = 10
+      initial_node_count        = 2
       local_ssd_count           = 0
       local_ssd_ephemeral_count = 0
       disk_size_gb              = 100
