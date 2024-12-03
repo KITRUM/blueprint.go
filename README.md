@@ -6,4 +6,5 @@ Have a blueprint of go service to use it as a basic building block to ship go se
 
 ## Examples
 
-- 👉 [Basic](basic/README.md) - contains a simple service with _flat_ data types
+- 👉 [Basic](basic/README.md) - contains a simple service with _flat_ data types, that expose the domain logic through the REST and GraphQL API.
+- 👉 [API First](apifirst/README.md) - contains a simple service 

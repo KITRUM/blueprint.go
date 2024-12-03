@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    working-directory: basic
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -31,5 +35,6 @@ jobs:
       - name: golangci-lint run
         uses: golangci/golangci-lint-action@v3
         with:
+          working-directory: basic
           version: latest
           args: --timeout=3m

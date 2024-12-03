@@ -1,0 +1,116 @@
+name: Basic Deploy STAGE
+
+on:
+  push:
+    tags:
+      - "v1.*"
+
+defaults:
+  run:
+    working-directory: basic
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - name: go tests
+        run: go test -cover ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - uses: golangci/golangci-lint-action@v3
+        with:
+          working-directory: basic
+          version: latest
+          args: --timeout=3m
+
+  build:
+    runs-on: ubuntu-latest
+    environment: stage
+    needs:
+      - test
+      - lint
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_JSON_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v1
+      - run: gcloud auth configure-docker europe-central2-docker.pkg.dev
+
+      - name: Docker build
+        run: |
+          docker build \
+          --build-arg BRANCH=${{ github.ref }} \
+          --build-arg COMMIT=${{ github.sha }} \
+          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }} \
+          -t europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest \
+          .
+
+      - name: Docker push
+        run: |
+          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }}
+          docker push europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:latest
+
+  deploy:
+    environment: stage
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_JSON_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v1
+
+      - run: |
+          gcloud run services update basic-stage \
+          --image europe-central2-docker.pkg.dev/golang-blueprint/golang-blueprint-basic/api:${{ github.sha }} \
+          --project golang-blueprint \
+          --region europe-central2
+
+  deploy-k8s:
+    environment: stage
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_JSON_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v1
+
+      - run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud container clusters get-credentials golang-blueprint-gke --region europe-central2
+
+      - run: |
+          helm upgrade --install -n stage -f ./helm/values.yaml \
+          --set namespace=stage \
+          --set app.env=stage \
+          --set image.tag=${{ github.sha }} \
+          --set app.dbConnStr=${{ secrets.DBCONNSTR }} basic-stage ./helm

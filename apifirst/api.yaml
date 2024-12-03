@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Cat Service API
+  version: 1.0.0
+  description: API for managing Cat entities
+servers:
+  - url: http://localhost:8080
+paths:
+  /cat/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get a Cat by ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cat'
+        '404':
+          description: Cat not found
+    post:
+      summary: Create a new Cat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCat'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+components:
+  schemas:
+    Cat:
+      type: object
+      properties:
+        ID:
+          type: string
+        Name:
+          type: string
+        Breed:
+          type: string
+        Age:
+          type: integer
+          format: int32
+    NewCat:
+      type: object
+      properties:
+        Name:
+          type: string
+        Breed:
+          type: string
+        Age:
+          type: integer
+          format: int32

@@ -9,8 +9,10 @@ import (
 
 	"github.com/KitRUM/golang-blueprint/basicrest/app"
 	"github.com/KitRUM/golang-blueprint/basicrest/app/service/cat"
-	"github.com/KitRUM/golang-blueprint/basicrest/app/service/cat/storage/pgcatstore"
+	"github.com/KitRUM/golang-blueprint/basicrest/app/service/cat/pgcatstore"
+	"github.com/KitRUM/golang-blueprint/basicrest/app/static"
 	"github.com/KitRUM/golang-blueprint/basicrest/pkg/log"
+	"github.com/KitRUM/golang-blueprint/basicrest/pkg/pgmigrate"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/urfave/cli/v2"
@@ -58,17 +60,18 @@ func main() {
 
 func ServeCommand() *cli.Command {
 	cfg := struct {
-		Env       string `validate:"oneof=dev test prod"`
+		Env       string `validate:"oneof=dev stage prod"`
 		LogLevel  string
 		HTTPAddr  string
 		DBConnStr string
+		DBMigrate bool
 	}{}
 
 	command := cli.Command{
 		Name:  "serve",
 		Usage: "runs HTTP listener to serve the incoming connections",
 		Action: func(c *cli.Context) error {
-			logger := log.New()
+			logger := log.New() // Init logger.
 
 			dbConfig, err := pgxpool.ParseConfig(cfg.DBConnStr)
 			if err != nil {
@@ -78,6 +81,26 @@ func ServeCommand() *cli.Command {
 			dbConn, err := pgxpool.NewWithConfig(c.Context, dbConfig)
 			if err != nil {
 				return fmt.Errorf("database connection: %w", err)
+			}
+
+			if cfg.DBMigrate {
+				logger.Infof("Database migration started")
+
+				migrations, err := static.Migrations()
+				if err != nil {
+					return fmt.Errorf("load migrations: %w", err)
+				}
+
+				migrator, err := pgmigrate.New(dbConn, migrations)
+				if err != nil {
+					return fmt.Errorf("create migrator: %w", err)
+				}
+
+				if err := migrator.Migrate(c.Context); err != nil {
+					return fmt.Errorf("database migration: %w", err)
+				}
+
+				logger.Infof("Database migration finished")
 			}
 
 			catStorage := pgcatstore.New(dbConn)
@@ -102,15 +125,15 @@ func ServeCommand() *cli.Command {
 				Name:        "env",
 				Usage:       "defines app runtime environment",
 				EnvVars:     []string{"ENV"},
-				Required:    true,
+				Value:       "dev",
 				Destination: &cfg.Env,
 			},
 			&cli.StringFlag{
 				Name:        "http-addr",
 				Usage:       "defines HTTP listener address",
 				EnvVars:     []string{"HTTP_ADDR"},
-				Value:       ":8080",
 				Destination: &cfg.HTTPAddr,
+				Value:       ":8080",
 			},
 			&cli.StringFlag{
 				Name:        "db-conn-str",
@@ -118,6 +141,13 @@ func ServeCommand() *cli.Command {
 				Required:    true,
 				Destination: &cfg.DBConnStr,
 				EnvVars:     []string{"DB_CONN_STR"},
+			},
+			&cli.BoolFlag{
+				Name:        "db-migrate",
+				Usage:       "defines whether the app should run database migrations before start",
+				Destination: &cfg.DBMigrate,
+				Value:       false,
+				EnvVars:     []string{"DB_MIGRATE"},
 			},
 		},
 	}
